@@ -89,55 +89,78 @@ function WindFramework:Notify(options)
         NotifCard:Destroy()
     end)
 end
+-- [1] دالة إنشاء وتعديل زر الـ Open الخارجي
+function WindFramework:CreateOpenButton(config)
+    config = config or {}
+    
+    local OpenBtn = Instance.new("TextButton", ScreenGui)
+    OpenBtn.Name = "WindUI_OpenButton"
+    OpenBtn.Size = config.Size or UDim2.new(0, 115, 0, 38)
+    OpenBtn.Position = config.Position or UDim2.new(0.5, 0, 0, -60)
+    OpenBtn.AnchorPoint = Vector2.new(0.5, 0.5)
+    OpenBtn.BackgroundColor3 = config.BackgroundColor or Theme.TopBar
+    OpenBtn.Text = config.Text or "  Open Panel"
+    OpenBtn.TextColor3 = config.TextColor or Theme.Accent
+    OpenBtn.Font = Enum.Font.GothamBold
+    OpenBtn.TextSize = config.TextSize or 13
+    OpenBtn.AutoButtonColor = false
+    OpenBtn.BackgroundTransparency = 1
+    OpenBtn.TextTransparency = 1
 
--- زر الـ OPEN الخارجي القابل للسحب
-local OpenBtn = Instance.new("TextButton", ScreenGui)
-OpenBtn.Size = UDim2.new(0, 115, 0, 38)
-OpenBtn.Position = UDim2.new(0.5, 0, 0, -60)
-OpenBtn.AnchorPoint = Vector2.new(0.5, 0.5)
-OpenBtn.BackgroundColor3 = Theme.TopBar
-OpenBtn.Text = "  Open Panel"
-OpenBtn.TextColor3 = Theme.Accent
-OpenBtn.Font = Enum.Font.GothamBold
-OpenBtn.TextSize = 13
-OpenBtn.AutoButtonColor = false
-OpenBtn.BackgroundTransparency = 1
-OpenBtn.TextTransparency = 1
+    local OpenCorner = Instance.new("UICorner", OpenBtn)
+    OpenCorner.CornerRadius = config.CornerRadius or UDim.new(0, 6)
 
-local OpenCorner = Instance.new("UICorner", OpenBtn)
-OpenCorner.CornerRadius = UDim.new(0, 6)
-local OpenStroke = Instance.new("UIStroke", OpenBtn)
-OpenStroke.Color = Theme.Accent
-OpenStroke.Thickness = 1.5
-OpenStroke.Transparency = 1
+    local OpenStroke = Instance.new("UIStroke", OpenBtn)
+    OpenStroke.Color = config.StrokeColor or Theme.Accent
+    OpenStroke.Thickness = config.StrokeThickness or 1.5
+    OpenStroke.Transparency = 1
 
-OpenBtn.MouseEnter:Connect(function()
-    TweenService:Create(OpenBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Accent, TextColor3 = Color3.fromRGB(255,255,255)}):Play()
-end)
-OpenBtn.MouseLeave:Connect(function()
-    TweenService:Create(OpenBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.TopBar, TextColor3 = Theme.Accent}):Play()
-end)
+    OpenBtn.MouseEnter:Connect(function()
+        TweenService:Create(OpenBtn, TweenInfo.new(0.2), {
+            BackgroundColor3 = config.HoverColor or Theme.Accent, 
+            TextColor3 = config.HoverTextColor or Color3.fromRGB(255,255,255)
+        }):Play()
+    end)
+    
+    OpenBtn.MouseLeave:Connect(function()
+        TweenService:Create(OpenBtn, TweenInfo.new(0.2), {
+            BackgroundColor3 = config.BackgroundColor or Theme.TopBar, 
+            TextColor3 = config.TextColor or Theme.Accent
+        }):Play()
+    end)
 
-local draggingOB, dragInputOB, dragStartOB, startPosOB
-OpenBtn.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        draggingOB = true
-        dragStartOB = input.Position
-        startPosOB = OpenBtn.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then draggingOB = false end
-        end)
-    end
-end)
-OpenBtn.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInputOB = input end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInputOB and draggingOB then
-        local delta = input.Position - dragStartOB
-        OpenBtn.Position = UDim2.new(startPosOB.X.Scale, startPosOB.X.Offset + delta.X, startPosOB.Y.Scale, startPosOB.Y.Offset + delta.Y)
-    end
-end)
+    -- نظام سحب زر Open
+    local draggingOB, dragInputOB, dragStartOB, startPosOB
+    OpenBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            draggingOB = true
+            dragStartOB = input.Position
+            startPosOB = OpenBtn.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then draggingOB = false end
+            end)
+        end
+    end)
+    
+    OpenBtn.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then 
+            dragInputOB = input 
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInputOB and draggingOB then
+            local delta = input.Position - dragStartOB
+            OpenBtn.Position = UDim2.new(startPosOB.X.Scale, startPosOB.X.Offset + delta.X, startPosOB.Y.Scale, startPosOB.Y.Offset + delta.Y)
+        end
+    end)
+
+    return OpenBtn, OpenStroke
+end
+
+-- استدعاء الزر وتوليده تلقائياً داخل المكتبة
+local OpenBtn, OpenStroke = WindFramework:CreateOpenButton()
+
 
 -- شاشة الحجب والتأكيد للإغلاق
 local Overlay = Instance.new("Frame", ScreenGui)
