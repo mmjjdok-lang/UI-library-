@@ -1,6 +1,5 @@
 -- ==============================================================================
--- kwno Hub - Ultimate UI Library (Version 3.5 Professional Edition)
--- Total Architecture & Component Blueprint (~800 Lines Code Structure)
+-- kwno Hub - Ultimate UI Library (Version 3.8 - Added Color Picker)
 -- ==============================================================================
 
 local HttpService = game:GetService("HttpService")
@@ -8,25 +7,20 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 local WindFramework = {}
 WindFramework.__index = WindFramework
 
--- Theme Configuration Architecture
 local Theme = {
     TopBar = Color3.fromRGB(18, 18, 22),
     Background = Color3.fromRGB(12, 12, 15),
     Accent = Color3.fromRGB(140, 80, 255),
-    SecondaryAccent = Color3.fromRGB(100, 40, 200),
     Text = Color3.fromRGB(240, 240, 245),
     DarkText = Color3.fromRGB(160, 160, 170),
-    ElementBackground = Color3.fromRGB(22, 22, 28),
-    HoverColor = Color3.fromRGB(35, 35, 45)
+    ElementBackground = Color3.fromRGB(22, 22, 28)
 }
 
--- Root Interface Container
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "kwnoHub_UltimateUI"
 ScreenGui.ResetOnSpawn = false
@@ -39,9 +33,7 @@ if ScreenGui.Parent ~= CoreGui then
     ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- ==============================================================================
--- [MODULE 1] Advanced Floating Open Button Engine (kwno 50x50 Box)
--- ==============================================================================
+-- [1] دالة زر الـ Open
 function WindFramework:CreateOpenButton(config)
     config = config or {}
     
@@ -53,8 +45,8 @@ function WindFramework:CreateOpenButton(config)
     OpenBtn.BackgroundColor3 = config.BackgroundColor or Theme.Background
     OpenBtn.Text = config.Text or "kwno"
     OpenBtn.TextColor3 = config.TextColor or Theme.Accent
-    OpenBtn.Font = Enum.Font.GothamBold
-    OpenBtn.TextSize = config.TextSize or 14
+    OpenBtn.Font = Enum.Font.Arcade
+    OpenBtn.TextSize = config.TextSize or 16
     OpenBtn.AutoButtonColor = false
     OpenBtn.BackgroundTransparency = 0.2
     OpenBtn.ZIndex = 9999
@@ -64,9 +56,9 @@ function WindFramework:CreateOpenButton(config)
 
     local OpenStroke = Instance.new("UIStroke", OpenBtn)
     OpenStroke.Color = config.StrokeColor or Theme.Accent
-    OpenStroke.Thickness = config.StrokeThickness or 1.5
+    OpenStroke.Thickness = config.StrokeThickness or 2
+    OpenStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
-    -- Hover Animations
     OpenBtn.MouseEnter:Connect(function()
         TweenService:Create(OpenBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             BackgroundColor3 = Theme.Accent,
@@ -81,7 +73,6 @@ function WindFramework:CreateOpenButton(config)
         }):Play()
     end)
 
-    -- Professional Mobile & PC Dragging System
     local draggingOB, dragInputOB, dragStartOB, startPosOB
     OpenBtn.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -117,16 +108,13 @@ function WindFramework:CreateOpenButton(config)
     return OpenBtn, OpenStroke
 end
 
--- ==============================================================================
--- [MODULE 2] Main Window Core Architecture (600x354 Custom Sizing)
--- ==============================================================================
+-- [2] دالة إنشاء النافذة
 function WindFramework:Window(options)
     options = options or {}
     local titleText = options.Title or "kwno Hub"
 
     local WindowObj = {}
     
-    -- Main Container Frame
     local MainFrame = Instance.new("Frame", ScreenGui)
     MainFrame.Name = "kwno_MainFrame"
     MainFrame.Size = UDim2.new(0, 600, 0, 354)
@@ -142,24 +130,19 @@ function WindFramework:Window(options)
     MainStroke.Color = Theme.Accent
     MainStroke.Thickness = 1.5
 
-    -- Top Header Bar
     local TopBar = Instance.new("Frame", MainFrame)
-    TopBar.Name = "TopBar"
     TopBar.Size = UDim2.new(1, 0, 0, 40)
     TopBar.BackgroundColor3 = Theme.TopBar
     TopBar.BorderSizePixel = 0
 
-    local TopCorner = Instance.new("UICorner", TopBar)
-    TopCorner.CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 10)
 
-    -- Fix Bottom Corners of TopBar to be square
     local FixBar = Instance.new("Frame", TopBar)
     FixBar.Size = UDim2.new(1, 0, 0, 10)
     FixBar.Position = UDim2.new(0, 0, 1, -10)
     FixBar.BackgroundColor3 = Theme.TopBar
     FixBar.BorderSizePixel = 0
 
-    -- Title Label
     local TitleLabel = Instance.new("TextLabel", TopBar)
     TitleLabel.Size = UDim2.new(1, -100, 1, 0)
     TitleLabel.Position = UDim2.new(0, 15, 0, 0)
@@ -170,13 +153,11 @@ function WindFramework:Window(options)
     TitleLabel.TextSize = 15
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Generate External Open Toggle Button
     local OpenBtn, _ = WindFramework:CreateOpenButton({
         Text = "kwno",
         Size = UDim2.new(0, 50, 0, 50)
     })
 
-    -- Close Button Action
     local CloseBtn = Instance.new("TextButton", TopBar)
     CloseBtn.Size = UDim2.new(0, 30, 0, 30)
     CloseBtn.Position = UDim2.new(1, -35, 0.5, -15)
@@ -211,7 +192,6 @@ function WindFramework:Window(options)
         }):Play()
     end)
 
-    -- Window Draggable Support for PC/Mobile
     local draggingWin, dragInputWin, dragStartWin, startPosWin
     TopBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -244,11 +224,7 @@ function WindFramework:Window(options)
         end
     end)
 
-    -- ==============================================================================
-    -- [MODULE 3] Navigation Sidebar & Tab System Framework
-    -- ==============================================================================
     local Sidebar = Instance.new("ScrollingFrame", MainFrame)
-    Sidebar.Name = "Sidebar"
     Sidebar.Size = UDim2.new(0, 140, 1, -50)
     Sidebar.Position = UDim2.new(0, 5, 0, 45)
     Sidebar.BackgroundTransparency = 1
@@ -260,15 +236,11 @@ function WindFramework:Window(options)
     SidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
     SidebarLayout.Padding = UDim.new(0, 5)
 
-    local PagesContainer = Instance.new("Folder", MainFrame)
-    PagesContainer.Name = "PagesContainer"
-
     local FirstTab = true
 
     function WindowObj:Tab(tabName)
         local TabObj = {}
         
-        -- Tab Navigation Button
         local TabBtn = Instance.new("TextButton", Sidebar)
         TabBtn.Size = UDim2.new(1, 0, 0, 32)
         TabBtn.BackgroundColor3 = FirstTab and Theme.ElementBackground or Color3.fromRGB(15, 15, 20)
@@ -281,9 +253,7 @@ function WindFramework:Window(options)
 
         Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
 
-        -- Tab Content Scrolling Page
         local TabPage = Instance.new("ScrollingFrame", MainFrame)
-        TabPage.Name = tabName .. "_Page"
         TabPage.Size = UDim2.new(1, -155, 1, -50)
         TabPage.Position = UDim2.new(0, 150, 0, 45)
         TabPage.BackgroundTransparency = 1
@@ -304,13 +274,9 @@ function WindFramework:Window(options)
             Sidebar.CanvasSize = UDim2.new(0, 0, 0, SidebarLayout.AbsoluteContentSize.Y + 10)
         end)
 
-        -- Tab Selection Mechanics
         TabBtn.MouseButton1Click:Connect(function()
-            for _, child in pairs(PagesContainer:GetChildren()) do
-                -- Managed via visibility toggle below
-            end
             for _, child in pairs(MainFrame:GetChildren()) do
-                if child:IsA("ScrollingFrame") and child.Name ~= "Sidebar" then
+                if child:IsA("ScrollingFrame") and child ~= Sidebar then
                     child.Visible = false
                 end
             end
@@ -328,9 +294,6 @@ function WindFramework:Window(options)
 
         FirstTab = false
 
-        -- ==============================================================================
-        -- [MODULE 4] UI Components (Sections, Buttons, Toggles, Sliders)
-        -- ==============================================================================
         function TabObj:Section(text)
             local SecLbl = Instance.new("TextLabel", TabPage)
             SecLbl.Size = UDim2.new(1, -10, 0, 25)
@@ -344,9 +307,6 @@ function WindFramework:Window(options)
 
         function TabObj:Button(data)
             data = data or {}
-            local btnTitle = data.Title or "Button"
-            local callback = data.Callback or function() end
-
             local BtnFrame = Instance.new("TextButton", TabPage)
             BtnFrame.Size = UDim2.new(1, -10, 0, 35)
             BtnFrame.BackgroundColor3 = Theme.ElementBackground
@@ -359,7 +319,7 @@ function WindFramework:Window(options)
             Title.Size = UDim2.new(1, -15, 1, 0)
             Title.Position = UDim2.new(0, 10, 0, 0)
             Title.BackgroundTransparency = 1
-            Title.Text = btnTitle
+            Title.Text = data.Title or "Button"
             Title.TextColor3 = Theme.Text
             Title.Font = Enum.Font.GothamMedium
             Title.TextSize = 12
@@ -369,17 +329,13 @@ function WindFramework:Window(options)
                 TweenService:Create(BtnFrame, TweenInfo.new(0.1), {BackgroundColor3 = Theme.Accent}):Play()
                 task.wait(0.1)
                 TweenService:Create(BtnFrame, TweenInfo.new(0.1), {BackgroundColor3 = Theme.ElementBackground}):Play()
-                pcall(callback)
+                pcall(data.Callback or function() end)
             end)
         end
 
         function TabObj:Toggle(data)
-            data = data.Title and data or {}
-            local toggleTitle = data.Title or "Toggle"
-            local defaultState = data.Default or false
-            local callback = data.Callback or function() end
-
-            local toggled = defaultState
+            data = data or {}
+            local toggled = data.Default or false
 
             local TogFrame = Instance.new("Frame", TabPage)
             TogFrame.Size = UDim2.new(1, -10, 0, 38)
@@ -391,7 +347,7 @@ function WindFramework:Window(options)
             Title.Size = UDim2.new(1, -60, 1, 0)
             Title.Position = UDim2.new(0, 10, 0, 0)
             Title.BackgroundTransparency = 1
-            Title.Text = toggleTitle
+            Title.Text = data.Title or "Toggle"
             Title.TextColor3 = Theme.Text
             Title.Font = Enum.Font.GothamMedium
             Title.TextSize = 12
@@ -418,30 +374,21 @@ function WindFramework:Window(options)
 
             ClickBtn.MouseButton1Click:Connect(function()
                 toggled = not toggled
-                
                 TweenService:Create(SwitchBox, TweenInfo.new(0.2), {
                     BackgroundColor3 = toggled and Theme.Accent or Color3.fromRGB(35, 35, 45)
                 }):Play()
-                
                 TweenService:Create(Circle, TweenInfo.new(0.2), {
                     Position = toggled and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
                 }):Play()
-
-                pcall(function()
-                    callback(toggled)
-                end)
+                pcall(function() (data.Callback or function() end)(toggled) end)
             end)
         end
 
         function TabObj:Slider(data)
             data = data or {}
-            local sliderTitle = data.Title or "Slider"
             local minVal = data.Min or 0
             local maxVal = data.Max or 100
-            local defaultVal = data.Default or 50
-            local callback = data.Callback or function() end
-
-            local currentValue = defaultVal
+            local currentValue = data.Default or 50
 
             local SliderFrame = Instance.new("Frame", TabPage)
             SliderFrame.Size = UDim2.new(1, -10, 0, 50)
@@ -453,7 +400,7 @@ function WindFramework:Window(options)
             Title.Size = UDim2.new(1, -20, 0, 20)
             Title.Position = UDim2.new(0, 10, 0, 5)
             Title.BackgroundTransparency = 1
-            Title.Text = sliderTitle
+            Title.Text = data.Title or "Slider"
             Title.TextColor3 = Theme.Text
             Title.Font = Enum.Font.GothamMedium
             Title.TextSize = 12
@@ -463,7 +410,7 @@ function WindFramework:Window(options)
             ValueLbl.Size = UDim2.new(0, 50, 0, 20)
             ValueLbl.Position = UDim2.new(1, -60, 0, 5)
             ValueLbl.BackgroundTransparency = 1
-            ValueLbl.Text = tostring(defaultVal)
+            ValueLbl.Text = tostring(currentValue)
             ValueLbl.TextColor3 = Theme.Accent
             ValueLbl.Font = Enum.Font.GothamBold
             ValueLbl.TextSize = 12
@@ -477,7 +424,7 @@ function WindFramework:Window(options)
             Instance.new("UICorner", Track).CornerRadius = UDim.new(1, 0)
 
             local Fill = Instance.new("Frame", Track)
-            Fill.Size = UDim2.new((defaultVal - minVal) / (maxVal - minVal), 0, 1, 0)
+            Fill.Size = UDim2.new((currentValue - minVal) / (maxVal - minVal), 0, 1, 0)
             Fill.BackgroundColor3 = Theme.Accent
 
             Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
@@ -488,7 +435,6 @@ function WindFramework:Window(options)
             SliderBtn.Text = ""
 
             local sliding = false
-
             SliderBtn.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     sliding = true
@@ -505,14 +451,65 @@ function WindFramework:Window(options)
                 if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                     local pos = math.clamp((input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
                     currentValue = math.floor(minVal + ((maxVal - minVal) * pos))
-                    
                     Fill.Size = UDim2.new(pos, 0, 1, 0)
                     ValueLbl.Text = tostring(currentValue)
-                    
-                    pcall(function()
-                        callback(currentValue)
-                    end)
+                    pcall(function() (data.Callback or function() end)(currentValue) end)
                 end
+            end)
+        end
+
+        -- [أداة اختيار اللون المخصصة ColorPicker]
+        function TabObj:ColorPicker(data)
+            data = data or {}
+            local currentColor = data.Default or Color3.fromRGB(140, 80, 255)
+
+            local PickerFrame = Instance.new("Frame", TabPage)
+            PickerFrame.Size = UDim2.new(1, -10, 0, 42)
+            PickerFrame.BackgroundColor3 = Theme.ElementBackground
+
+            Instance.new("UICorner", PickerFrame).CornerRadius = UDim.new(0, 6)
+
+            local Title = Instance.new("TextLabel", PickerFrame)
+            Title.Size = UDim2.new(1, -60, 1, 0)
+            Title.Position = UDim2.new(0, 10, 0, 0)
+            Title.BackgroundTransparency = 1
+            Title.Text = data.Title or "Color Picker"
+            Title.TextColor3 = Theme.Text
+            Title.Font = Enum.Font.GothamMedium
+            Title.TextSize = 12
+            Title.TextXAlignment = Enum.TextXAlignment.Left
+
+            local ColorDisplay = Instance.new("Frame", PickerFrame)
+            ColorDisplay.Size = UDim2.new(0, 32, 0, 22)
+            ColorDisplay.Position = UDim2.new(1, -42, 0.5, -11)
+            ColorDisplay.BackgroundColor3 = currentColor
+
+            Instance.new("UICorner", ColorDisplay).CornerRadius = UDim.new(0, 4)
+            
+            local ColorStroke = Instance.new("UIStroke", ColorDisplay)
+            ColorStroke.Color = Color3.fromRGB(255, 255, 255)
+            ColorStroke.Thickness = 1
+
+            local ColorBtn = Instance.new("TextButton", PickerFrame)
+            ColorBtn.Size = UDim2.new(1, 0, 1, 0)
+            ColorBtn.BackgroundTransparency = 1
+            ColorBtn.Text = ""
+
+            ColorBtn.MouseButton1Click:Connect(function()
+                -- تبديل سريع أو دوراني للألوان التلقائية (أو فتح لوحة مخصصة)
+                -- هنا جعلناها تتغير بين عدة ألوان مميزة عند الضغط
+                if currentColor == Color3.fromRGB(140, 80, 255) then
+                    currentColor = Color3.fromRGB(255, 50, 50) -- أحمر
+                elseif currentColor == Color3.fromRGB(255, 50, 50) then
+                    currentColor = Color3.fromRGB(50, 255, 50) -- أخضر
+                elseif currentColor == Color3.fromRGB(50, 255, 50) then
+                    currentColor = Color3.fromRGB(50, 150, 255) -- أزرق
+                else
+                    currentColor = Color3.fromRGB(140, 80, 255) -- بنفسجي
+                end
+
+                TweenService:Create(ColorDisplay, TweenInfo.new(0.2), {BackgroundColor3 = currentColor}):Play()
+                pcall(function() (data.Callback or function() end)(currentColor) end)
             end)
         end
 
@@ -522,15 +519,8 @@ function WindFramework:Window(options)
     return WindowObj
 end
 
--- ==============================================================================
--- [MODULE 5] Advanced Notification Engine (Notify System)
--- ==============================================================================
 function WindFramework:Notify(data)
     data = data or {}
-    local notifTitle = data.Title or "kwno Hub"
-    local notifContent = data.Content or "Notification message..."
-    local duration = data.Duration or 3
-
     local NotifCard = Instance.new("Frame", ScreenGui)
     NotifCard.Size = UDim2.new(0, 260, 0, 65)
     NotifCard.Position = UDim2.new(1, 280, 0.85, 0)
@@ -547,7 +537,7 @@ function WindFramework:Notify(data)
     Title.Size = UDim2.new(1, -15, 0, 22)
     Title.Position = UDim2.new(0, 10, 0, 8)
     Title.BackgroundTransparency = 1
-    Title.Text = notifTitle
+    Title.Text = data.Title or "kwno Hub"
     Title.TextColor3 = Theme.Accent
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 13
@@ -557,19 +547,18 @@ function WindFramework:Notify(data)
     Content.Size = UDim2.new(1, -15, 0, 25)
     Content.Position = UDim2.new(0, 10, 0, 30)
     Content.BackgroundTransparency = 1
-    Content.Text = notifContent
+    Content.Text = data.Content or ""
     Content.TextColor3 = Theme.Text
     Content.Font = Enum.Font.Gotham
     Content.TextSize = 11
     Content.TextXAlignment = Enum.TextXAlignment.Left
     Content.TextWrapped = true
 
-    -- Slide-in Animation
     TweenService:Create(NotifCard, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Position = UDim2.new(1, -275, 0.85, 0)
     }):Play()
 
-    task.delay(duration, function()
+    task.delay(data.Duration or 3, function()
         TweenService:Create(NotifCard, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
             Position = UDim2.new(1, 280, 0.85, 0)
         }):Play()
@@ -579,3 +568,4 @@ function WindFramework:Notify(data)
 end
 
 return WindFramework
+ 
