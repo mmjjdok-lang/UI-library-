@@ -1,5 +1,5 @@
 -- ==============================================================================
--- kwno Hub - Ultimate UI Library (Version 3.8 - Added Color Picker)
+-- kwno Hub - Ultimate UI Library (Extended Version ~800+ Lines)
 -- ==============================================================================
 
 local HttpService = game:GetService("HttpService")
@@ -8,6 +8,20 @@ local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+
+-- حماية ضد التكرار: تنظيف أي واجهة قديمة بالكامل قبل التشغيل
+for _, existing in pairs(CoreGui:GetChildren()) do
+    if existing.Name == "kwnoHub_UltimateUI" then
+        existing:Destroy()
+    end
+end
+pcall(function()
+    for _, existing in pairs(LocalPlayer.PlayerGui:GetChildren()) do
+        if existing.Name == "kwnoHub_UltimateUI" then
+            existing:Destroy()
+        end
+    end
+end)
 
 local WindFramework = {}
 WindFramework.__index = WindFramework
@@ -33,7 +47,7 @@ if ScreenGui.Parent ~= CoreGui then
     ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- [1] دالة زر الـ Open
+-- [1] دالة زر الـ Open (حماية وأبعاد متكافئة لكل الأجهزة)
 function WindFramework:CreateOpenButton(config)
     config = config or {}
     
@@ -108,7 +122,7 @@ function WindFramework:CreateOpenButton(config)
     return OpenBtn, OpenStroke
 end
 
--- [2] دالة إنشاء النافذة
+-- [2] دالة إنشاء النافذة الرئيسية
 function WindFramework:Window(options)
     options = options or {}
     local titleText = options.Title or "kwno Hub"
@@ -458,7 +472,6 @@ function WindFramework:Window(options)
             end)
         end
 
-        -- [أداة اختيار اللون المخصصة ColorPicker]
         function TabObj:ColorPicker(data)
             data = data or {}
             local currentColor = data.Default or Color3.fromRGB(140, 80, 255)
@@ -496,20 +509,180 @@ function WindFramework:Window(options)
             ColorBtn.Text = ""
 
             ColorBtn.MouseButton1Click:Connect(function()
-                -- تبديل سريع أو دوراني للألوان التلقائية (أو فتح لوحة مخصصة)
-                -- هنا جعلناها تتغير بين عدة ألوان مميزة عند الضغط
                 if currentColor == Color3.fromRGB(140, 80, 255) then
-                    currentColor = Color3.fromRGB(255, 50, 50) -- أحمر
+                    currentColor = Color3.fromRGB(255, 50, 50)
                 elseif currentColor == Color3.fromRGB(255, 50, 50) then
-                    currentColor = Color3.fromRGB(50, 255, 50) -- أخضر
+                    currentColor = Color3.fromRGB(50, 255, 50)
                 elseif currentColor == Color3.fromRGB(50, 255, 50) then
-                    currentColor = Color3.fromRGB(50, 150, 255) -- أزرق
+                    currentColor = Color3.fromRGB(50, 150, 255)
                 else
-                    currentColor = Color3.fromRGB(140, 80, 255) -- بنفسجي
+                    currentColor = Color3.fromRGB(140, 80, 255)
                 end
 
                 TweenService:Create(ColorDisplay, TweenInfo.new(0.2), {BackgroundColor3 = currentColor}):Play()
                 pcall(function() (data.Callback or function() end)(currentColor) end)
+            end)
+        end
+
+        -- [1] القائمة المنسدلة العادية (Dropdown)
+        function TabObj:Dropdown(data)
+            data = data or {}
+            local optionsList = data.Options or {}
+            local selectedOption = data.Default or optionsList[1] or ""
+            local isOpen = false
+
+            local DropFrame = Instance.new("Frame", TabPage)
+            DropFrame.Size = UDim2.new(1, -10, 0, 38)
+            DropFrame.BackgroundColor3 = Theme.ElementBackground
+            DropFrame.ClipsDescendants = true
+
+            Instance.new("UICorner", DropFrame).CornerRadius = UDim.new(0, 6)
+
+            local Title = Instance.new("TextLabel", DropFrame)
+            Title.Size = UDim2.new(1, -120, 0, 38)
+            Title.Position = UDim2.new(0, 10, 0, 0)
+            Title.BackgroundTransparency = 1
+            Title.Text = data.Title or "Dropdown"
+            Title.TextColor3 = Theme.Text
+            Title.Font = Enum.Font.GothamMedium
+            Title.TextSize = 12
+            Title.TextXAlignment = Enum.TextXAlignment.Left
+
+            local SelectBtn = Instance.new("TextButton", DropFrame)
+            SelectBtn.Size = UDim2.new(0, 100, 0, 26)
+            SelectBtn.Position = UDim2.new(1, -110, 0.5, -13)
+            SelectBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+            SelectBtn.Text = tostring(selectedOption)
+            SelectBtn.TextColor3 = Theme.Accent
+            SelectBtn.Font = Enum.Font.GothamBold
+            SelectBtn.TextSize = 11
+
+            Instance.new("UICorner", SelectBtn).CornerRadius = UDim.new(0, 4)
+
+            local ListContainer = Instance.new("ScrollingFrame", DropFrame)
+            ListContainer.Size = UDim2.new(1, -20, 0, 0)
+            ListContainer.Position = UDim2.new(0, 10, 0, 42)
+            ListContainer.BackgroundTransparency = 1
+            ListContainer.BorderSizePixel = 0
+            ListContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+            ListContainer.ScrollBarThickness = 2
+
+            local ListLayout = Instance.new("UIListLayout", ListContainer)
+            ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            ListLayout.Padding = UDim.new(0, 4)
+
+            ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                ListContainer.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
+            end)
+
+            for _, opt in ipairs(optionsList) do
+                local OptBtn = Instance.new("TextButton", ListContainer)
+                OptBtn.Size = UDim2.new(1, 0, 0, 28)
+                OptBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+                OptBtn.Text = tostring(opt)
+                OptBtn.TextColor3 = Theme.Text
+                OptBtn.Font = Enum.Font.Gotham
+                OptBtn.TextSize = 11
+
+                Instance.new("UICorner", OptBtn).CornerRadius = UDim.new(0, 4)
+
+                OptBtn.MouseButton1Click:Connect(function()
+                    selectedOption = opt
+                    SelectBtn.Text = tostring(opt)
+                    isOpen = false
+                    TweenService:Create(DropFrame, TweenInfo.new(0.2), {Size = UDim2.new(1, -10, 0, 38)}):Play()
+                    TweenService:Create(ListContainer, TweenInfo.new(0.2), {Size = UDim2.new(1, -20, 0, 0)}):Play()
+                    pcall(function() (data.Callback or function() end)(opt) end)
+                end)
+            end
+
+            SelectBtn.MouseButton1Click:Connect(function()
+                isOpen = not isOpen
+                local targetHeight = isOpen and math.min(120, (#optionsList * 32) + 10) + 42 or 38
+                local listHeight = isOpen and math.min(120, (#optionsList * 32) + 10) or 0
+                
+                TweenService:Create(DropFrame, TweenInfo.new(0.25), {Size = UDim2.new(1, -10, 0, targetHeight)}):Play()
+                TweenService:Create(ListContainer, TweenInfo.new(0.25), {Size = UDim2.new(1, -20, 0, listHeight)}):Play()
+            end)
+        end
+
+        -- [2] قائمة منسدلة للأزرار أو خيارات تنفيذ متعددة (Dropdown Multi-Action)
+        function TabObj:ActionDropdown(data)
+            data = data or {}
+            local actions = data.Actions or {}
+            local isOpen = false
+
+            local DropFrame = Instance.new("Frame", TabPage)
+            DropFrame.Size = UDim2.new(1, -10, 0, 38)
+            DropFrame.BackgroundColor3 = Theme.ElementBackground
+            DropFrame.ClipsDescendants = true
+
+            Instance.new("UICorner", DropFrame).CornerRadius = UDim.new(0, 6)
+
+            local Title = Instance.new("TextLabel", DropFrame)
+            Title.Size = UDim2.new(1, -120, 0, 38)
+            Title.Position = UDim2.new(0, 10, 0, 0)
+            Title.BackgroundTransparency = 1
+            Title.Text = data.Title or "Action Dropdown"
+            Title.TextColor3 = Theme.Text
+            Title.Font = Enum.Font.GothamMedium
+            Title.TextSize = 12
+            Title.TextXAlignment = Enum.TextXAlignment.Left
+
+            local SelectBtn = Instance.new("TextButton", DropFrame)
+            SelectBtn.Size = UDim2.new(0, 100, 0, 26)
+            SelectBtn.Position = UDim2.new(1, -110, 0.5, -13)
+            SelectBtn.BackgroundColor3 = Theme.Accent
+            SelectBtn.Text = "قائمة الأزرار ▾"
+            SelectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            SelectBtn.Font = Enum.Font.GothamBold
+            SelectBtn.TextSize = 11
+
+            Instance.new("UICorner", SelectBtn).CornerRadius = UDim.new(0, 4)
+
+            local ListContainer = Instance.new("ScrollingFrame", DropFrame)
+            ListContainer.Size = UDim2.new(1, -20, 0, 0)
+            ListContainer.Position = UDim2.new(0, 10, 0, 42)
+            ListContainer.BackgroundTransparency = 1
+            ListContainer.BorderSizePixel = 0
+            ListContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+            ListContainer.ScrollBarThickness = 2
+
+            local ListLayout = Instance.new("UIListLayout", ListContainer)
+            ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            ListLayout.Padding = UDim.new(0, 4)
+
+            ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                ListContainer.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
+            end)
+
+            for actName, actCallback in pairs(actions) do
+                local ActBtn = Instance.new("TextButton", ListContainer)
+                ActBtn.Size = UDim2.new(1, 0, 0, 28)
+                ActBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+                ActBtn.Text = tostring(actName)
+                ActBtn.TextColor3 = Theme.Accent
+                ActBtn.Font = Enum.Font.GothamSemibold
+                ActBtn.TextSize = 11
+
+                Instance.new("UICorner", ActBtn).CornerRadius = UDim.new(0, 4)
+
+                ActBtn.MouseButton1Click:Connect(function()
+                    isOpen = false
+                    TweenService:Create(DropFrame, TweenInfo.new(0.2), {Size = UDim2.new(1, -10, 0, 38)}):Play()
+                    TweenService:Create(ListContainer, TweenInfo.new(0.2), {Size = UDim2.new(1, -20, 0, 0)}):Play()
+                    pcall(actCallback)
+                end)
+            end
+
+            SelectBtn.MouseButton1Click:Connect(function()
+                isOpen = not isOpen
+                local count = 0 for _ in pairs(actions) do count = count + 1 end
+                local targetHeight = isOpen and math.min(120, (count * 32) + 10) + 42 or 38
+                local listHeight = isOpen and math.min(120, (count * 32) + 10) or 0
+                
+                TweenService:Create(DropFrame, TweenInfo.new(0.25), {Size = UDim2.new(1, -10, 0, targetHeight)}):Play()
+                TweenService:Create(ListContainer, TweenInfo.new(0.25), {Size = UDim2.new(1, -20, 0, listHeight)}):Play()
             end)
         end
 
@@ -567,5 +740,84 @@ function WindFramework:Notify(data)
     end)
 end
 
-return WindFramework
- 
+-- ==============================================================================
+-- [3] تشغيل السكريبت وبناء التبويبات والأدوات (النافذة، القوائم المنسدلة والأزرار)
+-- ==============================================================================
+
+local Window = WindFramework:Window({
+    Title = "kwno Hub - Pro Edition"
+})
+
+-- تبويب رئيسي
+local MainTab = Window:Tab("Main")
+
+MainTab:Section("أدوات التحكم الأساسية")
+
+MainTab:Button({
+    Title = "زر تجريبي للإشعارات",
+    Callback = function()
+        WindFramework:Notify({
+            Title = "kwno Hub",
+            Content = "تم النقر على الزر بنجاح!",
+            Duration = 3
+        })
+    end
+})
+
+MainTab:Toggle({
+    Title = "تفعيل الخاصية التلقائية",
+    Default = false,
+    Callback = function(state)
+        print("حالة الخاصية:", state)
+    end
+})
+
+MainTab:Slider({
+    Title = "تحديد السرعة",
+    Min = 16,
+    Max = 200,
+    Default = 50,
+    Callback = function(value)
+        print("القيمة:", value)
+    end
+})
+
+MainTab:ColorPicker({
+    Title = "اختيار لون التميز",
+    Default = Color3.fromRGB(140, 80, 255),
+    Callback = function(color)
+        print("تم اختيار اللون:", color)
+    end
+})
+
+-- تبويب الخيارات والقوائم المنسدلة
+local SettingsTab = Window:Tab("Settings")
+
+SettingsTab:Section("إعدادات القوائم المنسدلة")
+
+SettingsTab:Dropdown({
+    Title = "قائمة منسدلة لاختيار الخيارات",
+    Options = {"الخيار الأول", "الخيار الثاني", "الخيار الثالث", "الخيار الرابع"},
+    Default = "الخيار الأول",
+    Callback = function(selected)
+        print("تم اختيار العنصر:", selected)
+    end
+})
+
+SettingsTab:ActionDropdown({
+    Title = "قائمة منسدلة للأزرار التنفيذية",
+    Actions = {
+        ["تشغيل الهاك"] = function()
+            print("تم النقر على زر: تشغيل الهاك")
+            WindFramework:Notify({Title = "تنبيه", Content = "تم تشغيل الهاك!", Duration = 2})
+        end,
+        ["إيقاف مؤقت"] = function()
+            print("تم النقر على زر: إيقاف مؤقت")
+            WindFramework:Notify({Title = "تنبيه", Content = "تم إيقاف الهاك مؤقتاً!", Duration = 2})
+        end,
+        ["إعادة ضبط"] = function()
+            print("تم النقر على زر: إعادة ضبط")
+            WindFramework:Notify({Title = "تنبيه", Content = "تم إعادة الضبط!", Duration = 2})
+        end
+    }
+})
